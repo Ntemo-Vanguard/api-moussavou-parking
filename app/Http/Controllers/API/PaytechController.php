@@ -40,8 +40,8 @@ class PaytechController extends Controller
             'command_name' => 'Recharge carte RFID parking',
             'env'          => config('services.paytech.env', 'test'),
             'ipn_url'      => config('app.url') . '/api/paytech/ipn',
-            'success_url'  => config(env('FRONT_URL')) . '/payment-success',
-            'cancel_url'   => config(env('FRONT_URL')) . '/payment-cancel',
+            'success_url'  => config('app.front_url') . '/payment-success',
+            'cancel_url'   => config('app.front_url') . '/payment-cancel',
             // plusieurs méthodes possibles sur la page PayTech (optionnel)
             'target_payment' => 'Orange Money, Wave, Free Money',
             // Données que tu veux récupérer dans l’IPN
