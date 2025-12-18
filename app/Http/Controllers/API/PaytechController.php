@@ -125,12 +125,20 @@ class PaytechController extends Controller
         $custom = [];
 
         if (is_string($rawCustom)) {
-            // 1️⃣ Tentative JSON direct (le cas réel PayTech)
-            $json = json_decode($rawCustom, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $custom = $json;
-            } else {
-                // 2️⃣ Fallback base64(JSON)
+
+            // 1️⃣ Cas PayTech le plus fréquent : query string
+            parse_str($rawCustom, $custom);
+
+            // 2️⃣ Fallback JSON (au cas où)
+            if (empty($custom)) {
+                $json = json_decode($rawCustom, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $custom = $json;
+                }
+            }
+
+            // 3️⃣ Fallback base64(JSON)
+            if (empty($custom)) {
                 $decoded = base64_decode($rawCustom, true);
                 if ($decoded !== false) {
                     $json = json_decode($decoded, true);
@@ -142,7 +150,7 @@ class PaytechController extends Controller
         }
 
         /* 🔍 LOG CRUCIAL — À NE SURTOUT PAS OUBLIER */
-        Log::info('PayTech IPN custom_field parsed', [
+        Log::info('PayTech IPN custom_field parsed FINAL', [
             'raw'    => $rawCustom,
             'parsed' => $custom,
         ]);
