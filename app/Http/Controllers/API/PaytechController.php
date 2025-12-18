@@ -121,15 +121,40 @@ class PaytechController extends Controller
         }
 
         // Récupérer les données custom_field (encodées en Base64 dans l’IPN) :contentReference[oaicite:10]{index=10}
-        $custom   = [];
         $rawCustom = $payload['custom_field'] ?? null;
+        $custom = [];
 
-        if ($rawCustom) {
-            $decoded = base64_decode($rawCustom, true);
-            if ($decoded !== false) {
-                $custom = json_decode($decoded, true) ?: [];
+        if (is_string($rawCustom)) {
+
+            // 1️⃣ Cas PayTech le plus fréquent : query string
+            parse_str($rawCustom, $custom);
+
+            // 2️⃣ Fallback JSON (au cas où)
+            if (empty($custom)) {
+                $json = json_decode($rawCustom, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $custom = $json;
+                }
+            }
+
+            // 3️⃣ Fallback base64(JSON)
+            if (empty($custom)) {
+                $decoded = base64_decode($rawCustom, true);
+                if ($decoded !== false) {
+                    $json = json_decode($decoded, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $custom = $json;
+                    }
+                }
             }
         }
+
+        /* 🔍 LOG CRUCIAL — À NE SURTOUT PAS OUBLIER */
+        Log::info('PayTech IPN custom_field parsed FINAL', [
+            'raw'    => $rawCustom,
+            'parsed' => $custom,
+        ]);
+
 
         $carteId = $custom['carte_id'] ?? null;
         $userId  = $custom['user_id'] ?? null;
