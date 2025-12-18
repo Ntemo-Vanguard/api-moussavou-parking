@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Log;
 use App\Models\Admin;
 use App\Models\Carte;
 use App\Models\Client;
 use App\Models\Personne;
 use App\Models\Gestionnaire;
-use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
