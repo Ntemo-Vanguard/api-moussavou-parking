@@ -28,9 +28,6 @@ Route::post('/dashboard/access-rfid', [DashboardController::class, 'rfidAccess']
 // Mise à jour des places depuis capteurs 
 Route::post('/dashboard/places-update-status', [DashboardController::class, 'updatePlacesStatus']);
 
-// IPN PayTech (PayTech n’a pas de token JWT, donc hors middleware auth:api)
-Route::post('/paytech/ipn', [PaytechController::class, 'ipn']);
-
 Route::middleware('auth:api')->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::apiResource('utilisateurs', UtilisateurController::class);
@@ -51,3 +48,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 });
+
+// IPN PayTech (PayTech n’a pas de token JWT, donc hors middleware auth:api)
+Route::post('/paytech/ipn', [PaytechController::class, 'ipn']);
