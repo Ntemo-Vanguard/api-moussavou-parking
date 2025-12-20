@@ -91,6 +91,12 @@ class PaytechController extends Controller
      */
     public function ipn(Request $request)
     {
+        Log::info('IPN HIT RAW', [
+            'headers' => $request->headers->all(),
+            'body'    => $request->getContent(),
+            'all'     => $request->all(),
+        ]);
+        
         $payload = $request->all();
         Log::info('PayTech IPN received', $payload);
 
