@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CredentialsUtilisateurMail;
 use App\Models\Utilisateur;
 
 class UtilisateurController extends Controller
@@ -20,7 +22,21 @@ class UtilisateurController extends Controller
 
     public function store(Request $request)
     {
-        $utilisateur = Utilisateur::create($request->all());
+        $incomingFields = $request->validate([
+            'nom' => 'required|string|max:200',
+            'email' => 'required|email|unique:personnes,email',
+            'telephone' => 'required|string|max:150',
+            'role' => 'required|in:admin,gestionnaire',
+            'mot_de_passe' => 'required|string|min:4',
+        ]);
+
+        // ⚠️ On garde le mot de passe en clair POUR L’EMAIL UNIQUEMENT
+        $plainPassword = $incomingFields['mot_de_passe'];
+
+        $utilisateur = Utilisateur::create($incomingFields);
+
+        Mail::to($utilisateur->email)->send(new CredentialsUtilisateurMail($utilisateur, $plainPassword));
+
         return response()->json($utilisateur, 201);
     }
 

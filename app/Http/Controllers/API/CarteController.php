@@ -5,7 +5,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Carte;
+use App\Models\Transaction;
+use App\Mail\CarteRechargeNotification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class CarteController extends Controller
 {
@@ -53,10 +56,25 @@ class CarteController extends Controller
         }
 
         DB::transaction(function () use (&$carte, $data) {
-            // 1) Mise à jour du solde
-            $carte->solde = $carte->solde + $data['montant'];
-            $carte->save();
+
+            // Mise à jour solde
+            $carte->increment('solde', $data['montant']);
+
+            Transaction::create([
+                'carte_id'       => $carte->id,
+                'utilisateur_id' => $carte->utilisateur_id,
+                'montant'        => $data['montant'],
+                'type'           => 'recharge',
+                'moyen'          => $data['moyen'] ?? 'cash',
+                'statut'         => 'valide',
+            ]);
         });
+
+        Mail::to($carte->utilisateur->email)->send(new CarteRechargeNotification(
+            $carte->fresh('utilisateur'),
+            $data['montant'],
+            $data['moyen'] ?? 'cash'
+        ));
 
         // On renvoie la carte rafraîchie
         return response()->json($carte->fresh('utilisateur'));
